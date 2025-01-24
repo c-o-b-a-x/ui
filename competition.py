@@ -3,6 +3,7 @@ from tkinter import filedialog
 from time import sleep
 import open_file as of
 from RPSPlayer import RPSPlayer
+import utilities as utils  
 
 class RPSTournament:
     def __init__(self):
@@ -80,17 +81,81 @@ class RPSTournament:
 
         self.output_text.config(state=DISABLED)
 
+    def determine_winner(self, play1, play2):
+        return utils.determine_winner(play1, play2)
+
+    def update_images(self, play1, play2):
+        self.player1_img_label.config(image=self.images[play1])
+        self.player2_img_label.config(image=self.images[play2])
+        self.root.update()
+
     def run_tournament(self):
+        self.output_text.config(state=NORMAL)
+        self.output_text.delete(1.0, END)
+
         for i in range(len(self.players)):
             for j in range(i + 1, len(self.players)):
                 player1 = self.players[i]
                 player2 = self.players[j]
-                self.competitors_label.config(text=f"{player1.name} vs {player2.name}")
-                print(f"{player1.name} vs {player2.name}")
+                matchup_text = f"{player1.name} vs {player2.name}"
+
+                self.competitors_label.config(text=matchup_text)
+                self.output_text.insert(END, matchup_text + '\n')
                 self.root.update()
-                sleep(self.speed_scale.get())
-                self.player1_img_label.config(image=self.images["question"])
-                self.player2_img_label.config(image=self.images["question"])
+
+                player1_series_wins = 0
+                player2_series_wins = 0
+
+                for round_num in range(len(player1.plays)):
+                    play1 = player1.plays[round_num]
+                    play2 = player2.plays[round_num]
+                    result = self.determine_winner(play1, play2)
+
+                    if result == "win":
+                        player1.wins += 1
+                        player2.losses += 1
+                        player1_series_wins += 1
+                        round_outcome = f"Round {round_num + 1}: {player1.name} ({play1}) vs {player2.name} ({play2}) - Winner: {player1.name}"
+                    elif result == "lose":
+                        player2.wins += 1
+                        player1.losses += 1
+                        player2_series_wins += 1
+                        round_outcome = f"Round {round_num + 1}: {player1.name} ({play1}) vs {player2.name} ({play2}) - Winner: {player2.name}"
+                    else:
+                        player1.ties += 1
+                        player2.ties += 1
+                        round_outcome = f"Round {round_num + 1}: {player1.name} ({play1}) vs {player2.name} ({play2}) - Tie"
+
+                    self.update_images(play1, play2)
+                    self.outcome_label.config(text=round_outcome)
+                    self.output_text.insert(END, round_outcome + '\n')
+                    self.root.update()
+                    sleep(1 - self.speed_scale.get())
+
+                if player1_series_wins > player2_series_wins:
+                    player1.series_wins += 1
+                elif player2_series_wins > player1_series_wins:
+                    player2.series_wins += 1
+
+        self.print_final_results()
+
+    def print_final_results(self):
+        self.output_text.insert(END, "\nFinal Results:\n")
+        for player in self.players:
+            self.output_text.insert(END, str(player) + '\n')
+
+        max_wins = max(player.wins for player in self.players)
+        max_scores = max(player.wins + player.series_wins for player in self.players)
+        max_series_wins = max(player.series_wins for player in self.players)
+
+        top_winners = [player.name for player in self.players if player.wins == max_wins]
+        top_scorers = [player.name for player in self.players if player.wins + player.series_wins == max_scores]
+        top_series_winners = [player.name for player in self.players if player.series_wins == max_series_wins]
+
+        self.output_text.insert(END, f"\nMost Wins: {', '.join(top_winners)}\n")
+        self.output_text.insert(END, f"Highest Scores: {', '.join(top_scorers)}\n")
+        self.output_text.insert(END, f"Most Series Wins: {', '.join(top_series_winners)}\n")
+        self.output_text.config(state=DISABLED)
 
 if __name__ == "__main__":
     tournament = RPSTournament()
