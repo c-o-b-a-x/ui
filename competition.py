@@ -3,39 +3,45 @@ from tkinter import filedialog
 from time import sleep
 import open_file as of
 from RPSPlayer import RPSPlayer
-import utilities as utils  
+import utilities as utils
 
 class RPSTournament:
     def __init__(self):
         self.players = []
         self.output_text = None
         self.root = Tk()
+        self.root.title("RPS Tournament")
+        self.images = {}
+        self.player1_img_label = None
+        self.player2_img_label = None
         self.add_images()
         self.add_info()
         self.setup_ui()
 
     def add_images(self):
-        self.images = {
-            "rock": PhotoImage(file="resources/rock100.png"),
-            "paper": PhotoImage(file="resources/paper100.png"),
-            "scissors": PhotoImage(file="resources/scissors100.png"),
-            "question": PhotoImage(file="resources/tbd100.png")
-        }
-        self.player1_img_label = Label(self.root, image=self.images["question"])
-        self.vs_label = Label(self.root, text="VS")
-        self.player2_img_label = Label(self.root, image=self.images["question"])
-        
-        self.player1_img_label.grid(row=0, column=0)
-        self.vs_label.grid(row=0, column=1)
-        self.player2_img_label.grid(row=0, column=2)
+        try:
+            self.images["rock"] = PhotoImage(file="resources/rock100.png")
+            self.images["paper"] = PhotoImage(file="resources/paper100.png")
+            self.images["scissors"] = PhotoImage(file="resources/scissors100.png")
+            self.images["question"] = PhotoImage(file="resources/tbd100.png")
+
+            self.player1_img_label = Label(self.root, image=self.images["question"])
+            self.vs_label = Label(self.root, text="VS")
+            self.player2_img_label = Label(self.root, image=self.images["question"])
+
+            self.player1_img_label.grid(row=0, column=0)
+            self.vs_label.grid(row=0, column=1)
+            self.player2_img_label.grid(row=0, column=2)
+        except Exception as e:
+            pass
 
     def add_info(self):
         self.info_frame = Frame(self.root)
         self.info_frame.grid(row=1, columnspan=3)
-        
+
         self.competitors_label = Label(self.info_frame, text="")
         self.competitors_label.pack()
-        
+
         self.outcome_label = Label(self.info_frame, text="")
         self.outcome_label.pack()
 
@@ -61,7 +67,7 @@ class RPSTournament:
         file_path = filedialog.askopenfilename(filetypes=[("multi rock, paper, scissors", "*.mrps")])
         if file_path:
             self.load_players_from_file(file_path)
-        
+
     def load_players_from_file(self, file_path):
         self.players.clear()
         with open(file_path, 'r') as file:
@@ -76,7 +82,6 @@ class RPSTournament:
         self.output_text.delete(1.0, END)
 
         for player in self.players:
-            print(player)
             self.output_text.insert(END, str(player) + '\n')
 
         self.output_text.config(state=DISABLED)
@@ -85,9 +90,16 @@ class RPSTournament:
         return utils.determine_winner(play1, play2)
 
     def update_images(self, play1, play2):
-        self.player1_img_label.config(image=self.images[play1])
-        self.player2_img_label.config(image=self.images[play2])
-        self.root.update()
+        play_mapping = {'r': 'rock', 'p': 'paper', 's': 'scissors'}
+        try:
+            if self.player1_img_label and self.player2_img_label:
+                self.player1_img_label.config(image=self.images[play_mapping[play1]])
+                self.player2_img_label.config(image=self.images[play_mapping[play2]])
+                self.root.update()
+        except KeyError as e:
+            print(f"Error updating images: {e}")
+        except AttributeError as e:
+            print(f"Error: {e}")
 
     def run_tournament(self):
         self.output_text.config(state=NORMAL)

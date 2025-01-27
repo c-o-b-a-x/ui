@@ -5,9 +5,8 @@ import open_file as of
 from competition import RPSTournament
 
 def tourny():
-    new_win = Toplevel(window)
-    tournament = RPSTournament()  
-    tournament.open_window(new_win)
+    tournament = RPSTournament()
+    tournament.root.mainloop()
 
 def play_game():
     global player_choice
@@ -19,14 +18,11 @@ def play_game():
     
     computer_choice = random.choice(["r", "p", "s"])
     
-    player_choice = convert_to_play(player_choice)
-    computer_choice = convert_to_play(computer_choice)
-    
     result = determine_winner(player_choice, computer_choice)
     
-    if result == 1:
+    if result == "win":
         score["Wins"] += 1
-    elif result == -1:
+    elif result == "lose":
         score["Losses"] += 1
     else:
         score["Ties"] += 1
@@ -93,12 +89,14 @@ scissors_button.grid(row=0, column=2)
 player_img = PhotoImage(file="Resources/tbd100.png")
 player_label = Label(frame, image=player_img)
 player_label.grid(row=1, column=0)
+player_label.image = player_img  # Prevent garbage collection
 
 Label(frame, text="VS").grid(row=1, column=1)
 
 computer_img = PhotoImage(file="Resources/tbd100.png")
 computer_label = Label(frame, image=computer_img)
 computer_label.grid(row=1, column=2)
+computer_label.image = computer_img  # Prevent garbage collection
 
 error_label = Label(window, text="", fg="red")
 error_label.grid(row=1, column=0, columnspan=3)

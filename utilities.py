@@ -1,12 +1,10 @@
-def determine_winner(player1, player2):
-    if player1 == player2:
-        return 0
-    elif (player1 == 'rock' and player2 == 'scissors') or \
-         (player1 == 'paper' and player2 == 'rock') or \
-         (player1 == 'scissors' and player2 == 'paper'):
-        return 1
+def determine_winner(play1, play2):
+    if play1 == play2:
+        return "tie"
+    elif (play1 == 'r' and play2 == 's') or (play1 == 'p' and play2 == 'r') or (play1 == 's' and play2 == 'p'):
+        return "win"
     else:
-        return -1
+        return "lose"
 
 def convert_to_play(p: str):
     if p == 'r':
